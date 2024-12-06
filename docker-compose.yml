@@ -1,0 +1,36 @@
+services:
+  api:
+    container_name: api
+    image: node:20-alpine
+    command: sh -c "npm i -g @fastify/secure-session && npx @fastify/secure-session > secret-key && yarn install && yarn run dev"
+    ports:
+      - 3030:3030
+    working_dir: /app
+    volumes:
+      - ./:/app
+    networks:
+      - server-side
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://root:root@db/cibus?schema=public
+  db:
+    container_name: db
+    image: postgres:16.1-alpine
+    restart: always
+    networks:
+      - server-side
+    ports:
+      - 5432:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: app #optional (specify default database instead of $POSTGRES_DB)
+
+networks:
+  server-side: {}
+
+volumes:
+  db-data: {}
